@@ -1,0 +1,84 @@
+---
+version: 0.1
+runson: win
+autosplit: true
+retryOnFailure: true
+
+maxRetries: 1
+concurrency: 2
+
+jobLabel: ['team_hyperexecute']
+
+env:
+  CACHE_DIR: m2_cache_dir
+  TARGET_OS: Windows 10
+
+# Dependency caching for Windows
+cacheKey: '{{ checksum "pom.xml" }}'
+cacheDirectories:
+  - $CACHE_DIR
+
+# shell: bash
+
+beta_features:
+     partial_completion_status: "Completed"
+
+pre:
+  # Create the Cache directory
+  - mkdir -p m2_cache_dir
+  # Download and install packages in the CACHE_DIR.
+  # Skip execution of the tests in the pre step
+  - mvn -Dmaven.repo.local=$CACHE_DIR -Dmaven.test.skip=true clean install
+
+testDiscovery:
+  type: raw
+  mode: dynamic
+  command: grep 'public class' src/test/java/hyperexecute/*.java | awk '{print$3}'
+
+testRunnerCommand: mvn `-Dplatname=win `-Dmaven.repo.local=m2_cache_dir `-Dtest=$test test site surefire-report:report
+
+
+# 1. For Exsiting HE -> This will work -> Analytics
+# 2. Git integration HE -> Integrting E2E repo -> E2E (CLI), executed via TAS but run on HE 
+
+# Integrates a repo -> Webhook -> We check for some items -> hyperexecute.yaml and (.tas.yml) -> if we have hyperexecute.yml (priority) 
+# Tas will spawn a container -> which will do a test discovery -> Update those entries onto TAS db -> (we will have a mapping of tests -> smart selection)
+# then TAS will tell hyperexecute which tests to run
+
+
+# As a user I had 10 E2E tests in my repo
+# I integrated and test discovery discovered 10 tests
+# Next commit, I added 1 more test -> (Git Diff)
+# Wil be used to tell HE -> Which tests to run exactly, how many times to run, How to run FTM job for new tests if told in hyperexecute.yml
+
+
+# 1 - FTM for new test cases -> Rishabh and Himanshu ranjan 
+# 2 - Analytics of Exsiting tests and history -> Vikrant and Saurabh
+# 3 - Based on a manual mapping, run only those tests that were requested.
+
+
+# 100 tests -> 80 tests
+# -> grep 100 tests
+
+# 1 run that will happen -> Dry run -> Windows VM -> 80 tests
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
